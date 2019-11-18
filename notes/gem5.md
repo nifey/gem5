@@ -1,0 +1,62 @@
+# Building Gem5
+
+1. Clone the gem5 repository
+git clone https://github.com/gem5/gem5
+
+2. Install dependencies
+sudo apt-get install scons 
+
+3. Build gem5
+cd gem5
+scons build/X86/gem5.opt -j9
+
+4. Test if gem5 works by running a hello world program in syscall emulation mode
+./build/X86/gem5.opt --debug-flags=MMU --debug-file=mmu_trace.log ./configs/example/se.py --cpu-type=TimingSimpleCPU --caches --l2cache -c tests/test-progs/hello/bin/x86/linux/hello
+
+# To run in full system mode
+Ref: https://icomparch.blogspot.com/2014/10/gem5-instructions-for-enabling-full.html
+
+1. Download full system files from http://www.m5sim.org/Download
+mkdir fsfiles
+cd fsfiles
+# get x86 full system files
+wget http://www.m5sim.org/dist/current/x86/x86-system.tar.bz2
+tar -xvf x86-system.tar.bz2
+# get x86 config files
+wget http://www.m5sim.org/dist/current/x86/config-x86.tar.bz2
+tar -xvf config-x86.tar.bz2
+
+2. Set M5_PATH variable as the directory that contains the disk and binaries folder
+vi ~/.bashrc
+export M5_PATH=path/to/the/folder/fsfiles
+source ~/.bashrc
+
+3. Rename linux-x86.img to x86root.img in the disks folder
+
+4. It also needs an image called linux-bigswap2.img. It is only present in the Alpha full system files so download Alpha full system files 
+wget http://m5sim.org/dist/current/m5_system_2.0b3.tar.bz2
+tar -xvf m5_system_2.0b3.tar.bz2
+mv m5_system_2.0b3/disks/linux-bigswap2.img fsfiles/disks
+
+5. Run the full system simulation
+
+./build/X86/gem5.opt ./configs/example/fs.py --cpu-type=TimingSimpleCPU --caches --l2cache --kernel=/home/e0-243-2/fsfiles/binaries/x86_64-vmlinux-2.6.22.9
+
+Open another terminal and type
+cd util/term
+make
+./m5term 3456
+
+After sometime it will load a bash shell
+
+# Memory tracing with Gem5
+
+As a part of our term project we wanted to get a trace of DRAM accesses for running SPEC and PARSEC programs and find patterns in the access trace. We also wanted to differentiate DRAM accesses that are due to Page table walks and other DRAM accesses.
+
+Gem5 source code has DPRINTF statements in all the source files. They are not actually printed or saved unless we pass a debug flag while running the simulations.
+
+./build/X86/gem5.opt --debug-flags=DRAM --debug-file=trace.log ./configs/example/fs.py --cpu-type=TimingSimpleCPU --caches --l2cache --kernel=/home/e0-243-2/fsfiles/binaries/x86_64-vmlinux-2.6.22.9
+
+The trace file could get big very quick. We can tell gem5 to save the log in compressed format by appending .gz to the trace file like
+./build/X86/gem5.opt --debug-flags=DRAM --debug-file=trace.log.gz ./configs/example/fs.py --cpu-type=TimingSimpleCPU --caches --l2cache --kernel=/home/e0-243-2/fsfiles/binaries/x86_64-vmlinux-2.6.22.9
+

@@ -359,7 +359,7 @@ DRAMCtrl::decodeAddr(const PacketPtr pkt, Addr dramPktAddr, unsigned size,
     assert(row < rowsPerBank);
     assert(row < Bank::NO_ROW);
 
-    DPRINTF(DRAM, "Address: %lld Rank %d Bank %d Row %d\n",
+    DPRINTF(DRAM, "Address: %#x Rank %d Bank %d Row %d\n",
             dramPktAddr, rank, bank, row);
 
     // create the corresponding DRAM packet with the entry time and
@@ -570,10 +570,10 @@ DRAMCtrl::recvTimingReq(PacketPtr pkt)
 {
     // This is where we enter from the outside world
         if (pkt->req->isPTWalk()){
-                DPRINTF(DRAM, "recvTimingReq: request %s addr %lld size %d PTWalk\n",
+                DPRINTF(DRAM, "recvTimingReq: request %s addr %#x size %d PTWalk\n",
                                 pkt->cmdString(), pkt->getAddr(), pkt->getSize());
         } else {
-                DPRINTF(DRAM, "recvTimingReq: request %s addr %lld size %d OtherDRAMAccess\n",
+                DPRINTF(DRAM, "recvTimingReq: request %s addr %#x size %d OtherDRAMAccess\n",
                                 pkt->cmdString(), pkt->getAddr(), pkt->getSize());
         }
 
@@ -1021,7 +1021,7 @@ DRAMCtrl::prechargeBank(Rank& rank_ref, Bank& bank, Tick pre_at, bool trace)
 void
 DRAMCtrl::doDRAMAccess(DRAMPacket* dram_pkt)
 {
-    DPRINTF(DRAM, "Timing access to addr %lld, rank/bank/row %d %d %d\n",
+    DPRINTF(DRAM, "Timing access to addr %#x, rank/bank/row %d %d %d\n",
             dram_pkt->addr, dram_pkt->rank, dram_pkt->bank, dram_pkt->row);
 
     // get the rank
