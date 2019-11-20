@@ -60,3 +60,33 @@ Gem5 source code has DPRINTF statements in all the source files. They are not ac
 The trace file could get big very quick. We can tell gem5 to save the log in compressed format by appending .gz to the trace file like
 ./build/X86/gem5.opt --debug-flags=DRAM --debug-file=trace.log.gz ./configs/example/fs.py --cpu-type=TimingSimpleCPU --caches --l2cache --kernel=/home/e0-243-2/fsfiles/binaries/x86_64-vmlinux-2.6.22.9
 
+# Checkpointing in Gem5
+After gem5 has booted, type
+m5 checkpoint
+
+This will create a ckpt.<some_number> file in the m5out directory.
+
+To run from the checkpoint use --checkpoint-restore=N and --restore-with-cpu=<Type of cpu used to record the checkpoint>. This will only start recording DPRINTF messages after the checkpoint.
+./build/X86/gem5.opt --debug-flags=DRAM --debug-file=trace.log.gz ./configs/example/fs.py --cpu-type=TimingSimpleCPU --caches --l2cache --kernel=/home/e0-243-2/fsfiles/parsec/x86_64-vmlinux-2.6.28.4-smp --checkpoint-restore=1 --restore-with-cpu=TimingSimpleCPU
+
+# Running PARSEC benchmarks on Gem5
+
+For this I am going to use the images files provided by UC Texas
+
+1. Download the image and kernel
+wget http://www.cs.utexas.edu/~parsec_m5/x86_64-vmlinux-2.6.28.4-smp
+wget http://www.cs.utexas.edu/~parsec_m5/x86root-parsec.img.bz2
+
+wget http://www.cs.utexas.edu/~parsec_m5/inputsets.txt
+wget http://www.cs.utexas.edu/~parsec_m5/writescripts.pl
+wget http://www.cs.utexas.edu/~parsec_m5/hack_back_ckpt.rcS
+
+2. Generate gem5 rc script using writescripts.pl
+
+chmod +x writescripts.pl
+./writescripts.pl <benchmark_name> <number of threads>
+
+3. This will generate multiple scripts for different datasets. To run the scripts in gem5 add --script=<script_file> to the gem5.opt command like:
+
+./build/X86/gem5.opt --debug-flags=DRAM --debug-file=trace.log.gz ./configs/example/fs.py --cpu-type=TimingSimpleCPU --caches --l2cache --kernel=/home/e0-243-2/fsfiles/parsec/x86_64-vmlinux-2.6.28.4-smp --checkpoint-restore=1 --restore-with-cpu=TimingSimpleCPU --script=/home/e0-243-2/fsfiles/parsec/rcscripts/facesim_3c_simlarge.rcS
+
