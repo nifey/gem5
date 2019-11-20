@@ -1,3 +1,9 @@
+# TODO
+See if gem5.fast works prints dprintf messages
+see if x86kvmcpu can be used
+check if newer kernel version can be used - da zhang
+see if command option can be used to run the benchmarks
+
 # Building Gem5
 
 1. Clone the gem5 repository
@@ -49,6 +55,9 @@ make
 
 After sometime it will load a bash shell
 
+To list all options that can be used with fs.py script, run:
+./build/X86/gem5.opt configs/example/fs.py -h
+
 # Memory tracing with Gem5
 
 As a part of our term project we wanted to get a trace of DRAM accesses for running SPEC and PARSEC programs and find patterns in the access trace. We also wanted to differentiate DRAM accesses that are due to Page table walks and other DRAM accesses.
@@ -77,6 +86,9 @@ For this I am going to use the images files provided by UC Texas
 wget http://www.cs.utexas.edu/~parsec_m5/x86_64-vmlinux-2.6.28.4-smp
 wget http://www.cs.utexas.edu/~parsec_m5/x86root-parsec.img.bz2
 
+bzip2 -d x86root-parsec.img.bz2
+mv x86root-parsec.img x86root.img
+
 wget http://www.cs.utexas.edu/~parsec_m5/inputsets.txt
 wget http://www.cs.utexas.edu/~parsec_m5/writescripts.pl
 wget http://www.cs.utexas.edu/~parsec_m5/hack_back_ckpt.rcS
@@ -89,4 +101,32 @@ chmod +x writescripts.pl
 3. This will generate multiple scripts for different datasets. To run the scripts in gem5 add --script=<script_file> to the gem5.opt command like:
 
 ./build/X86/gem5.opt --debug-flags=DRAM --debug-file=trace.log.gz ./configs/example/fs.py --cpu-type=TimingSimpleCPU --caches --l2cache --kernel=/home/e0-243-2/fsfiles/parsec/x86_64-vmlinux-2.6.28.4-smp --checkpoint-restore=1 --restore-with-cpu=TimingSimpleCPU --script=/home/e0-243-2/fsfiles/parsec/rcscripts/facesim_3c_simlarge.rcS
+
+# Adding SPEC benchmarks to image (Working with image files)
+I'm using the SPEC2000 Integer benchmarks. Because it is old, I am not able to compile it with GCC on my computer.
+
+1. Download the PARSEC image from UCTexas
+
+2. Mount the image
+
+mkdir mnt
+sudo mount -o loop,offset=32256 x86root-parsec.img mnt
+
+3. Copy SPEC files into the image
+mkdir mnt/spec
+cp -r CINT2000 mnt/spec
+
+3. Chroot
+sudo mount --bind /proc/ mnt/proc/
+sudo mount --bind /dev/ mnt/dev/
+sudo chroot mnt
+
+4. Compile SPEC CINT2000
+cd spec/CINT2000/tools/src
+bash buildtools
+
+5. Exit Chroot and unmount
+sudo umount mnt/proc
+sudo umount mnt/dev
+sudo umount mnt
 
